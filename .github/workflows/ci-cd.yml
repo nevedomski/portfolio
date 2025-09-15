@@ -1,0 +1,189 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  # Job 1: Lint and Type Check
+  lint-and-type-check:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+      
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      
+      - name: Run linter
+        run: bun run lint
+      
+      - name: Type check
+        run: bunx tsc --noEmit
+
+  # Job 2: Build and Test
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    needs: lint-and-type-check
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+      
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      
+      - name: Build application
+        run: bun run build
+        env:
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_AUTHOR_NAME: ${{ secrets.NEXT_PUBLIC_AUTHOR_NAME }}
+          NEXT_PUBLIC_AUTHOR_EMAIL: ${{ secrets.NEXT_PUBLIC_AUTHOR_EMAIL }}
+          NEXT_PUBLIC_TITLE: ${{ secrets.NEXT_PUBLIC_TITLE }}
+          NEXT_PUBLIC_LOCATION: ${{ secrets.NEXT_PUBLIC_LOCATION }}
+          NEXT_PUBLIC_GITHUB_URL: ${{ secrets.NEXT_PUBLIC_GITHUB_URL }}
+          NEXT_PUBLIC_LINKEDIN_URL: ${{ secrets.NEXT_PUBLIC_LINKEDIN_URL }}
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: .next
+          retention-days: 1
+
+  # Job 3: Deploy to Cloudflare Workers
+  deploy-cloudflare:
+    name: Deploy to Cloudflare Workers
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+      
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      
+      - name: Build Next.js app
+        run: bun run build
+        env:
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_AUTHOR_NAME: ${{ secrets.NEXT_PUBLIC_AUTHOR_NAME }}
+          NEXT_PUBLIC_AUTHOR_EMAIL: ${{ secrets.NEXT_PUBLIC_AUTHOR_EMAIL }}
+          NEXT_PUBLIC_TITLE: ${{ secrets.NEXT_PUBLIC_TITLE }}
+          NEXT_PUBLIC_LOCATION: ${{ secrets.NEXT_PUBLIC_LOCATION }}
+          NEXT_PUBLIC_GITHUB_URL: ${{ secrets.NEXT_PUBLIC_GITHUB_URL }}
+          NEXT_PUBLIC_LINKEDIN_URL: ${{ secrets.NEXT_PUBLIC_LINKEDIN_URL }}
+      
+      - name: Build for Cloudflare Workers
+        run: bunx opennextjs-cloudflare build
+        env:
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_AUTHOR_NAME: ${{ secrets.NEXT_PUBLIC_AUTHOR_NAME }}
+          NEXT_PUBLIC_AUTHOR_EMAIL: ${{ secrets.NEXT_PUBLIC_AUTHOR_EMAIL }}
+          NEXT_PUBLIC_TITLE: ${{ secrets.NEXT_PUBLIC_TITLE }}
+          NEXT_PUBLIC_LOCATION: ${{ secrets.NEXT_PUBLIC_LOCATION }}
+          NEXT_PUBLIC_GITHUB_URL: ${{ secrets.NEXT_PUBLIC_GITHUB_URL }}
+          NEXT_PUBLIC_LINKEDIN_URL: ${{ secrets.NEXT_PUBLIC_LINKEDIN_URL }}
+      
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --env production
+
+  # Job 4: Deploy to GitHub Pages (Optional - Uncomment if using GitHub Pages)
+  # deploy-github-pages:
+  #   name: Deploy to GitHub Pages
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-test
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   permissions:
+  #     contents: read
+  #     pages: write
+  #     id-token: write
+  #   
+  #   environment:
+  #     name: github-pages
+  #     url: ${{ steps.deployment.outputs.page_url }}
+  #   
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #     
+  #     - name: Setup Bun
+  #       uses: oven-sh/setup-bun@v2
+  #       with:
+  #         bun-version: latest
+  #     
+  #     - name: Install dependencies
+  #       run: bun install --frozen-lockfile
+  #     
+  #     - name: Build with Next.js static export
+  #       run: bun run build
+  #       env:
+  #         NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+  #         NEXT_PUBLIC_AUTHOR_NAME: ${{ secrets.NEXT_PUBLIC_AUTHOR_NAME }}
+  #         NEXT_PUBLIC_AUTHOR_EMAIL: ${{ secrets.NEXT_PUBLIC_AUTHOR_EMAIL }}
+  #         NEXT_PUBLIC_TITLE: ${{ secrets.NEXT_PUBLIC_TITLE }}
+  #         NEXT_PUBLIC_LOCATION: ${{ secrets.NEXT_PUBLIC_LOCATION }}
+  #         NEXT_PUBLIC_GITHUB_URL: ${{ secrets.NEXT_PUBLIC_GITHUB_URL }}
+  #         NEXT_PUBLIC_LINKEDIN_URL: ${{ secrets.NEXT_PUBLIC_LINKEDIN_URL }}
+  #     
+  #     - name: Upload pages artifact
+  #       uses: actions/upload-pages-artifact@v3
+  #       with:
+  #         path: ./out
+  #     
+  #     - name: Deploy to GitHub Pages
+  #       id: deployment
+  #       uses: actions/deploy-pages@v4

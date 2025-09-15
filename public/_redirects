@@ -1,0 +1,12 @@
+# Cloudflare Pages redirects
+# Format: [source] [destination] [status code]
+
+# Articles redirects (temporary - 302)
+/articles / 302
+/articles/* / 302
+
+# Speaking page redirect (temporary - 302)
+/speaking / 302
+
+# Uses page redirect (temporary - 302)
+/uses / 302

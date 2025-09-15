@@ -4,6 +4,10 @@ import { type MDXComponents } from 'mdx/types'
 export function useMDXComponents(components: MDXComponents) {
   return {
     ...components,
-    Image: (props: ImageProps) => <Image {...props} />,
+    Image: (props: ImageProps) => {
+      // Provide default alt text if not specified
+      const { alt = "", ...restProps } = props
+      return <Image alt={alt} {...restProps} />
+    },
   }
 }

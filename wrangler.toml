@@ -1,0 +1,32 @@
+# Cloudflare Workers configuration for Next.js with OpenNext
+name = "portfolio"
+main = ".open-next/worker.js"
+compatibility_date = "2025-03-25"
+compatibility_flags = ["nodejs_compat"]
+
+# Asset configuration
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+# Environment variables (if needed for production)
+[env.production]
+vars = { }
+
+# Development environment
+[env.development]
+vars = { }
+
+# Optional: Observability
+[observability]
+enabled = true
+
+# Optional: Limits configuration
+# Adjust based on your needs and Cloudflare plan
+# [limits]
+# cpu_ms = 50
+
+# Optional: Custom domains (configure in Cloudflare dashboard)
+# routes = [
+#   { pattern = "portfolio.example.com", zone_name = "example.com" }
+# ]

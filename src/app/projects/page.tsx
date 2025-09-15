@@ -3,33 +3,7 @@ import Image from 'next/image'
 
 import { Card } from '@/components/Card'
 import { SimpleLayout } from '@/components/SimpleLayout'
-import logoNer from '@/images/logos/ner.svg'
-import logoGitBridge from '@/images/logos/gitbridge.svg'
-import logoDocRag from '@/images/logos/docrag.svg'
-
-const projects = [
-  {
-    name: 'Mistral NER Fine-tuning Framework',
-    description:
-      'A modular framework for fine-tuning the Mistral-7B language model on Named Entity Recognition tasks using memory-efficient approaches like 8-bit quantization and LoRA. It supports multi-dataset training, flexible label mapping, as well as serving via a FastAPI interface.',
-    link: { href: `${process.env.NEXT_PUBLIC_GITHUB_URL}/mistral_ner`, label: 'github.com' },
-    logo: logoNer,
-  },
-  {
-    name: 'GitBridge – GitHub Repository Synchronization Tool',
-    description:
-      'A production-ready CLI tool to synchronize GitHub repositories when direct git access is blocked. It uses the GitHub REST API and can fall back to Playwright-based browser automation. Supports incremental updates, proxy detection, detailed logging, and works across Windows, Linux, and macOS.',
-    link: { href: `${process.env.NEXT_PUBLIC_GITHUB_URL}/gitBridge`, label: 'github.com' },
-    logo: logoGitBridge,
-  },
-  {
-    name: 'Simple Document Question-Answering RAG',
-    description:
-      'A lightweight Retrieval-Augmented Generation system for document-based question-answering. Includes containerized deployment, notebook interfaces, and extensions for experimentation.',
-    link: { href: `${process.env.NEXT_PUBLIC_GITHUB_URL}/document-rag`, label: 'github.com' },
-    logo: logoDocRag,
-  },
-]
+import { projects } from '@/lib/projects'
 
 function LinkIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
@@ -59,11 +33,11 @@ export default function Projects() {
       >
         {projects.map((project) => (
           <Card as="li" key={project.name}>
-            <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-md ring-1 shadow-zinc-800/5 ring-zinc-900/5 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0">
+            <div className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-md ring-1 shadow-zinc-800/5 ring-zinc-900/5 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0">
               <Image
                 src={project.logo}
                 alt=""
-                className="h-8 w-8"
+                className="h-12 w-12"
                 unoptimized
               />
             </div>

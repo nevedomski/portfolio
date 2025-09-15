@@ -13,13 +13,17 @@ import {
 } from '@/components/SocialIcons'
 import logoPnc from '@/images/logos/pnc.svg'
 import logoDsi from '@/images/logos/dsi.svg'
-import image1 from '@/images/photos/image-1.jpg'
-import image2 from '@/images/photos/image-2.jpg'
-import image3 from '@/images/photos/image-3.jpg'
-import image4 from '@/images/photos/image-4.jpg'
-import image5 from '@/images/photos/image-5.jpg'
-import { type ArticleWithSlug, getAllArticles } from '@/lib/articles'
-import { formatDate } from '@/lib/formatDate'
+import image1 from '@/images/photos/1.png'
+import image2 from '@/images/photos/2.png'
+import image3 from '@/images/photos/3.png'
+import image4 from '@/images/photos/4.png'
+import image5 from '@/images/photos/5.png'
+// Articles imports - commented out for now
+// import { type ArticleWithSlug, getAllArticles } from '@/lib/articles'
+// import { formatDate } from '@/lib/formatDate'
+
+// Project imports
+import { type Project, getRandomProjects } from '@/lib/projects'
 
 function MailIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
@@ -80,17 +84,41 @@ function ArrowDownIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   )
 }
 
-function Article({ article }: { article: ArticleWithSlug }) {
+// Article component - commented out for now
+// function Article({ article }: { article: ArticleWithSlug }) {
+//   return (
+//     <Card as="article">
+//       <Card.Title href={`/articles/${article.slug}`}>
+//         {article.title}
+//       </Card.Title>
+//       <Card.Eyebrow as="time" dateTime={article.date} decorate>
+//         {formatDate(article.date)}
+//       </Card.Eyebrow>
+//       <Card.Description>{article.description}</Card.Description>
+//       <Card.Cta>Read article</Card.Cta>
+//     </Card>
+//   )
+// }
+
+// Project component for home page
+function ProjectCard({ project }: { project: Project }) {
   return (
     <Card as="article">
-      <Card.Title href={`/articles/${article.slug}`}>
-        {article.title}
-      </Card.Title>
-      <Card.Eyebrow as="time" dateTime={article.date} decorate>
-        {formatDate(article.date)}
-      </Card.Eyebrow>
-      <Card.Description>{article.description}</Card.Description>
-      <Card.Cta>Read article</Card.Cta>
+      <div className="flex items-center gap-4 mb-3">
+        <div className="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white shadow-md ring-1 shadow-zinc-800/5 ring-zinc-900/5 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0">
+          <Image
+            src={project.logo}
+            alt=""
+            className="h-10 w-10"
+            unoptimized
+          />
+        </div>
+        <Card.Title href={project.link.href}>
+          {project.name}
+        </Card.Title>
+      </div>
+      <Card.Description>{project.description}</Card.Description>
+      <Card.Cta>View on GitHub</Card.Cta>
     </Card>
   )
 }
@@ -231,7 +259,7 @@ function Resume() {
           <Role key={roleIndex} role={role} />
         ))}
       </ol>
-      <Button href="#" variant="secondary" className="group mt-6 w-full">
+      <Button href="/resume2025.pdf" download="Sergei_Nevedomski_2025_CV.pdf" variant="secondary" className="group mt-6 w-full">
         Download CV
         <ArrowDownIcon className="h-4 w-4 stroke-zinc-400 transition group-active:stroke-zinc-600 dark:group-hover:stroke-zinc-50 dark:group-active:stroke-zinc-50" />
       </Button>
@@ -249,7 +277,7 @@ function Photos() {
           <div
             key={image.src}
             className={clsx(
-              'relative aspect-9/10 w-44 flex-none overflow-hidden rounded-xl bg-zinc-100 sm:w-72 sm:rounded-2xl dark:bg-zinc-800',
+              'relative aspect-9/10 w-44 flex-none overflow-hidden rounded-xl bg-zinc-100 sm:w-56 sm:rounded-2xl dark:bg-zinc-800',
               rotations[imageIndex % rotations.length],
             )}
           >
@@ -258,6 +286,8 @@ function Photos() {
               alt=""
               sizes="(min-width: 640px) 18rem, 11rem"
               className="absolute inset-0 h-full w-full object-cover"
+              quality={90}
+              priority={imageIndex < 3}
             />
           </div>
         ))}
@@ -267,7 +297,11 @@ function Photos() {
 }
 
 export default async function Home() {
-  let articles = (await getAllArticles()).slice(0, 4)
+  // Articles code - commented out for now
+  // let articles = (await getAllArticles()).slice(0, 4)
+  
+  // Get 3 random projects to display
+  const randomProjects = getRandomProjects(3)
 
   return (
     <>
@@ -302,8 +336,14 @@ export default async function Home() {
       <Container className="mt-24 md:mt-28">
         <div className="mx-auto grid max-w-xl grid-cols-1 gap-y-20 lg:max-w-none lg:grid-cols-2">
           <div className="flex flex-col gap-16">
-            {articles.map((article) => (
+            {/* Articles section - commented out for now */}
+            {/* {articles.map((article) => (
               <Article key={article.slug} article={article} />
+            ))} */}
+            
+            {/* Projects section */}
+            {randomProjects.map((project, index) => (
+              <ProjectCard key={index} project={project} />
             ))}
           </div>
           <div className="space-y-10 lg:pl-16 xl:pl-24">
